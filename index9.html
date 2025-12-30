@@ -1,0 +1,1356 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Trabalha Aí, Adhan — O Anti-Milagre Interativo</title>
+  <meta name="description" content="Um site divertido e interativo: clique, ganhe moedas, faça missões e pare de procurar milagre na internet." />
+  <style>
+    :root{
+      --bg0:#070A0F;
+      --bg1:#0A1020;
+      --card:#0f172a;
+      --card2:#0b1224;
+      --line:rgba(255,255,255,.08);
+      --txt:#e5e7eb;
+      --mut:#94a3b8;
+      --good:#22c55e;
+      --warn:#fbbf24;
+      --bad:#ef4444;
+      --acc:#60a5fa;
+      --acc2:#a78bfa;
+      --shadow: 0 16px 40px rgba(0,0,0,.55);
+      --r:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", Helvetica;
+      color:var(--txt);
+      background: radial-gradient(1200px 600px at 20% 10%, rgba(96,165,250,.18), transparent 60%),
+                  radial-gradient(900px 500px at 85% 20%, rgba(167,139,250,.14), transparent 55%),
+                  radial-gradient(1000px 700px at 50% 90%, rgba(34,197,94,.10), transparent 60%),
+                  linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow-x:hidden;
+    }
+    a{color:inherit}
+    .wrap{
+      position:relative;
+      min-height:100%;
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* Background canvas */
+    #bg{
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      pointer-events:none;
+      opacity:.9;
+    }
+
+    header{
+      padding:28px 18px 14px;
+      max-width:1180px;
+      margin:0 auto;
+      width:100%;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+    }
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .logo{
+      width:46px;height:46px;border-radius:14px;
+      background: linear-gradient(135deg, rgba(96,165,250,.95), rgba(167,139,250,.95));
+      display:grid;place-items:center;
+      box-shadow: var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+    .logo:before{
+      content:"";
+      position:absolute; inset:-40%;
+      background: conic-gradient(from 0deg, rgba(255,255,255,.0), rgba(255,255,255,.55), rgba(255,255,255,.0));
+      animation: spin 4.6s linear infinite;
+      opacity:.35;
+    }
+    .logo span{
+      position:relative;
+      font-weight:900;
+      letter-spacing:.5px;
+      filter:drop-shadow(0 6px 12px rgba(0,0,0,.45));
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    h1{
+      font-size: clamp(18px, 2.2vw, 28px);
+      line-height:1.1;
+      margin:0 0 2px 0;
+      letter-spacing:.2px;
+    }
+    .sub{
+      margin:0;
+      color:var(--mut);
+      font-size: 13px;
+      line-height:1.35;
+      max-width:62ch;
+    }
+    .pillbar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .pill{
+      border:1px solid var(--line);
+      background: rgba(15,23,42,.55);
+      padding:10px 12px;
+      border-radius:999px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      box-shadow: 0 10px 24px rgba(0,0,0,.25);
+      backdrop-filter: blur(8px);
+    }
+    .pill strong{font-weight:800}
+    .pill .mini{color:var(--mut);font-size:12px}
+
+    main{
+      width:100%;
+      max-width:1180px;
+      margin:0 auto;
+      padding:14px 18px 36px;
+      display:grid;
+      grid-template-columns: 1.25fr .85fr;
+      gap:16px;
+    }
+    @media (max-width: 980px){
+      main{grid-template-columns:1fr}
+      header{flex-direction:column; align-items:stretch}
+      .pillbar{justify-content:flex-start}
+    }
+
+    .card{
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(15,23,42,.75), rgba(11,18,36,.75));
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      backdrop-filter: blur(10px);
+    }
+    .card .hd{
+      padding:14px 14px 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      background: rgba(255,255,255,.02);
+    }
+    .card .hd h2{
+      margin:0;
+      font-size:14px;
+      letter-spacing:.35px;
+      text-transform:uppercase;
+      color: rgba(229,231,235,.95);
+    }
+    .card .bd{padding:14px}
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width: 520px){ .grid2{grid-template-columns:1fr} }
+
+    .btn{
+      appearance:none;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color:var(--txt);
+      padding:10px 12px;
+      border-radius: 14px;
+      cursor:pointer;
+      font-weight:700;
+      letter-spacing:.2px;
+      box-shadow: 0 10px 22px rgba(0,0,0,.25);
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      user-select:none;
+    }
+    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.16); }
+    .btn:active{ transform: translateY(1px) scale(.99); }
+    .btn.primary{
+      border:1px solid rgba(96,165,250,.35);
+      background: linear-gradient(135deg, rgba(96,165,250,.28), rgba(167,139,250,.24));
+    }
+    .btn.good{
+      border:1px solid rgba(34,197,94,.35);
+      background: linear-gradient(135deg, rgba(34,197,94,.22), rgba(96,165,250,.15));
+    }
+    .btn.bad{
+      border:1px solid rgba(239,68,68,.35);
+      background: linear-gradient(135deg, rgba(239,68,68,.18), rgba(167,139,250,.12));
+    }
+    .btn.slim{padding:8px 10px;border-radius:12px;font-size:13px}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .mut{color:var(--mut); font-size:12px; line-height:1.35}
+
+    .meter{
+      height:10px;
+      border-radius:999px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      overflow:hidden;
+    }
+    .meter > i{
+      display:block;height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(96,165,250,.9), rgba(167,139,250,.9));
+      border-radius:999px;
+      transition: width .25s ease;
+    }
+
+    .stat{
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,.18);
+      border-radius: 16px;
+      padding:12px;
+    }
+    .stat .k{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.35px}
+    .stat .v{font-size:22px;font-weight:900;margin-top:3px}
+    .stat .v small{font-size:12px;color:var(--mut);font-weight:700;margin-left:6px}
+
+    .bigTap{
+      position:relative;
+      border-radius: 22px;
+      border:1px solid rgba(255,255,255,.10);
+      background: radial-gradient(500px 240px at 30% 30%, rgba(96,165,250,.18), transparent 60%),
+                  radial-gradient(420px 240px at 75% 60%, rgba(167,139,250,.16), transparent 62%),
+                  rgba(255,255,255,.03);
+      padding:18px;
+      min-height: 230px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      overflow:hidden;
+    }
+    .bigTap:before{
+      content:"";
+      position:absolute; inset:-60%;
+      background: conic-gradient(from 0deg, rgba(255,255,255,.0), rgba(255,255,255,.18), rgba(255,255,255,.0));
+      animation: spin 6.5s linear infinite;
+      opacity:.25;
+    }
+    .bigTap .inner{position:relative}
+    .tapBtn{
+      width:100%;
+      padding:16px 14px;
+      border-radius: 18px;
+      font-size:16px;
+      border:1px solid rgba(255,255,255,.14);
+      background: linear-gradient(135deg, rgba(96,165,250,.26), rgba(167,139,250,.20));
+    }
+    .tapBtn strong{font-weight:900}
+    .float{
+      position:absolute;
+      font-weight:900;
+      font-size:14px;
+      color: rgba(229,231,235,.95);
+      text-shadow: 0 10px 18px rgba(0,0,0,.55);
+      pointer-events:none;
+      animation: floatUp .85s ease forwards;
+      opacity:0;
+    }
+    @keyframes floatUp{
+      0%{transform:translateY(0) scale(.95); opacity:0}
+      15%{opacity:1}
+      100%{transform:translateY(-50px) scale(1.05); opacity:0}
+    }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .item{
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,.14);
+      border-radius: 16px;
+      padding:12px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .item .t{font-weight:900}
+    .item .d{color:var(--mut); font-size:12px; margin-top:2px}
+    .tag{
+      font-size:11px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color: rgba(229,231,235,.92);
+      white-space:nowrap;
+    }
+    .tag.good{border-color: rgba(34,197,94,.28); background: rgba(34,197,94,.10)}
+    .tag.warn{border-color: rgba(251,191,36,.28); background: rgba(251,191,36,.10)}
+    .tag.bad{border-color: rgba(239,68,68,.28); background: rgba(239,68,68,.10)}
+    .toast{
+      position:fixed;
+      right:16px;
+      bottom:16px;
+      max-width:360px;
+      border-radius: 18px;
+      padding:12px 12px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(10,16,32,.82);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      transform: translateY(18px);
+      opacity:0;
+      pointer-events:none;
+      transition: all .25s ease;
+    }
+    .toast.show{transform: translateY(0); opacity:1}
+    .toast .tt{font-weight:900;margin:0 0 3px}
+    .toast .tx{margin:0;color:var(--mut);font-size:12px;line-height:1.35}
+
+    footer{
+      max-width:1180px;
+      margin:0 auto;
+      width:100%;
+      padding:0 18px 28px;
+      color: rgba(148,163,184,.9);
+      font-size:12px;
+    }
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size:11px;
+      padding:2px 6px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      color: rgba(229,231,235,.9);
+    }
+
+    .shake{ animation: shake .35s ease; }
+    @keyframes shake{
+      0%,100%{transform:translateX(0)}
+      20%{transform:translateX(-6px)}
+      40%{transform:translateX(6px)}
+      60%{transform:translateX(-4px)}
+      80%{transform:translateX(4px)}
+    }
+
+    .modalWrap{
+      position:fixed; inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(6px);
+      z-index:50;
+    }
+    .modalWrap.show{display:flex}
+    .modal{
+      width:min(720px, 100%);
+      border-radius: 22px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(15,23,42,.92);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .modal .top{
+      padding:14px 14px 10px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .modal .top h3{margin:0; font-size:14px; text-transform:uppercase; letter-spacing:.35px}
+    .modal .content{padding:14px}
+    .modal .content p{margin:0 0 10px; color:var(--mut); line-height:1.5}
+    .modal .content ul{margin:0; padding-left:18px; color: rgba(229,231,235,.92)}
+    .modal .content li{margin:6px 0}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace}
+  </style>
+</head>
+
+<body>
+  <canvas id="bg"></canvas>
+
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"><span>⚡</span></div>
+        <div>
+          <h1>Trabalha Aí, Adhan — o Anti-Milagre Interativo</h1>
+          <p class="sub">
+            Um site para lembrar (com humor) que resultado vem de consistência.
+            Clique, ganhe moedas, cumpra missões e desbloqueie upgrades. Dica: experimente o <span class="kbd">↑ ↑ ↓ ↓ ← → ← → B A</span>.
+          </p>
+        </div>
+      </div>
+
+      <div class="pillbar">
+        <div class="pill">
+          <div>
+            <div class="mini">Moedas</div>
+            <strong id="coins">0</strong>
+          </div>
+          <div>
+            <div class="mini">Por clique</div>
+            <strong id="perClick">1</strong>
+          </div>
+          <div>
+            <div class="mini">Combo</div>
+            <strong id="combo">x1</strong>
+          </div>
+        </div>
+
+        <div class="pill">
+          <div>
+            <div class="mini">Nível</div>
+            <strong id="level">1</strong>
+          </div>
+          <div style="min-width:140px">
+            <div class="mini">Progresso</div>
+            <div class="meter" aria-label="Progresso de nível"><i id="xpBar"></i></div>
+          </div>
+        </div>
+
+        <button class="btn slim" id="helpBtn" title="Como jogar">Ajuda</button>
+        <button class="btn slim bad" id="resetBtn" title="Zerar progresso">Reset</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Left column -->
+      <section class="card">
+        <div class="hd">
+          <h2>Central de Ação</h2>
+          <div class="row">
+            <span class="tag warn" id="moodTag">Modo: Produtivo (quase)</span>
+          </div>
+        </div>
+
+        <div class="bd">
+          <div class="grid2">
+            <div class="stat">
+              <div class="k">Mensagem do dia</div>
+              <div class="v" style="font-size:14px; line-height:1.35; font-weight:800" id="msg">
+                Adhan: parar de procurar milagre na internet e ir trabalhar. Um clique por vez.
+              </div>
+              <div class="mut" style="margin-top:6px">
+                Botão “Trabalhar” dá bônus. Botão “Milagre” cobra taxa.
+              </div>
+            </div>
+
+            <div class="stat">
+              <div class="k">Status</div>
+              <div class="v" id="statusLine">Foco: <span style="color:var(--acc); font-weight:900">Ativo</span></div>
+              <div class="mut" id="statusHint" style="margin-top:6px">Mantenha o combo clicando sem demorar demais.</div>
+            </div>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <div class="bigTap">
+            <div class="inner">
+              <div class="row" style="justify-content:space-between">
+                <div>
+                  <div style="font-weight:900; font-size:16px">Gerador de Resultado</div>
+                  <div class="mut">Clique para ganhar moedas e XP. Quanto maior o combo, maior o ganho.</div>
+                </div>
+                <div class="tag good" id="bonusTag">Bônus: 0%</div>
+              </div>
+
+              <div style="height:12px"></div>
+
+              <button class="btn tapBtn primary" id="tap">
+                <strong>TRABALHAR AGORA</strong> (clique)
+              </button>
+
+              <div style="height:10px"></div>
+
+              <div class="row">
+                <button class="btn good" id="workBtn">Trabalhar (bônus)</button>
+                <button class="btn bad" id="miracleBtn">Procurar milagre</button>
+                <button class="btn" id="quoteBtn">Frase aleatória</button>
+                <button class="btn" id="soundBtn">Som: <span id="soundState">OFF</span></button>
+              </div>
+
+              <div style="height:10px"></div>
+
+              <div class="mut">
+                Dica: clique rápido para manter o combo. Se parar muito tempo, o combo cai.
+              </div>
+            </div>
+          </div>
+
+          <div style="height:14px"></div>
+
+          <div class="card" style="background:rgba(0,0,0,.12); border-radius:18px">
+            <div class="hd" style="border-bottom:1px solid rgba(255,255,255,.06)">
+              <h2>Upgrades</h2>
+              <div class="mut">Gaste moedas para ganhar mais por clique.</div>
+            </div>
+            <div class="bd">
+              <div class="list" id="shop"></div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Right column -->
+      <aside class="card">
+        <div class="hd">
+          <h2>Missões, Conquistas e Ranking</h2>
+          <div class="row">
+            <span class="tag" id="saveTag">Salvo localmente</span>
+          </div>
+        </div>
+
+        <div class="bd">
+          <div class="grid2">
+            <div class="stat">
+              <div class="k">Cliques</div>
+              <div class="v" id="clicks">0</div>
+              <div class="mut">Total de cliques no “Trabalhar”.</div>
+            </div>
+            <div class="stat">
+              <div class="k">Multa de milagre</div>
+              <div class="v" id="tax">0 <small>moedas</small></div>
+              <div class="mut">Quanto você já pagou por “atalhos”.</div>
+            </div>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <div class="card" style="background:rgba(0,0,0,.12); border-radius:18px">
+            <div class="hd">
+              <h2>Missões</h2>
+              <button class="btn slim" id="newMissionsBtn">Trocar missões</button>
+            </div>
+            <div class="bd">
+              <div class="list" id="missions"></div>
+            </div>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <div class="card" style="background:rgba(0,0,0,.12); border-radius:18px">
+            <div class="hd">
+              <h2>Conquistas</h2>
+              <button class="btn slim" id="showBadgesBtn">Ver tudo</button>
+            </div>
+            <div class="bd">
+              <div class="list" id="badgesPreview"></div>
+            </div>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <div class="card" style="background:rgba(0,0,0,.12); border-radius:18px">
+            <div class="hd">
+              <h2>Ranking local</h2>
+              <button class="btn slim" id="renameBtn">Renomear</button>
+            </div>
+            <div class="bd">
+              <div class="list" id="leaderboard"></div>
+              <div class="mut" style="margin-top:10px">
+                Ranking fica salvo no navegador (não vai pra internet).
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </aside>
+    </main>
+
+    <footer>
+      Feito em um único arquivo. Controles: <span class="kbd">Espaço</span> para clicar | <span class="kbd">M</span> para “milagre” | <span class="kbd">S</span> som.
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <p class="tt" id="toastT">Ok</p>
+    <p class="tx" id="toastX">...</p>
+  </div>
+
+  <div class="modalWrap" id="modalWrap" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="top">
+        <h3 id="modalTitle">Ajuda</h3>
+        <button class="btn slim" id="closeModal">Fechar</button>
+      </div>
+      <div class="content" id="modalContent"></div>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // Utilities
+    // =========================
+    const $ = (s, el=document) => el.querySelector(s);
+    const $$ = (s, el=document) => Array.from(el.querySelectorAll(s));
+    const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+    const rnd = (a,b)=>Math.random()*(b-a)+a;
+    const now = ()=>performance.now();
+
+    // =========================
+    // State (saved locally)
+    // =========================
+    const KEY = "adhan_anti_milagre_v1";
+    const defaultState = {
+      name: "Daniel",
+      coins: 0,
+      clicks: 0,
+      taxPaid: 0,
+      perClick: 1,
+      combo: 1,
+      bestCombo: 1,
+      xp: 0,
+      level: 1,
+      sound: false,
+      upgrades: { pc1:0, pc2:0, pc3:0, aura:0 },
+      badges: {},
+      missionsSeed: 1,
+      missions: [],
+      lastTapAt: 0
+    };
+
+    function load(){
+      try{
+        const raw = localStorage.getItem(KEY);
+        if(!raw) return structuredClone(defaultState);
+        const st = JSON.parse(raw);
+        return { ...structuredClone(defaultState), ...st };
+      }catch(e){
+        return structuredClone(defaultState);
+      }
+    }
+    function save(){
+      localStorage.setItem(KEY, JSON.stringify(state));
+      $("#saveTag").textContent = "Salvo localmente";
+      $("#saveTag").className = "tag good";
+      setTimeout(()=>{
+        $("#saveTag").textContent = "Salvo localmente";
+        $("#saveTag").className = "tag";
+      }, 650);
+    }
+
+    let state = load();
+
+    // =========================
+    // Sound (simple synth)
+    // =========================
+    let audioCtx = null;
+    function beep(freq=440, dur=0.06, type="sine", gain=0.04){
+      if(!state.sound) return;
+      try{
+        audioCtx ||= new (window.AudioContext || window.webkitAudioContext)();
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type = type;
+        o.frequency.value = freq;
+        g.gain.value = gain;
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start();
+        o.stop(audioCtx.currentTime + dur);
+      }catch(e){}
+    }
+
+    // =========================
+    // Game mechanics
+    // =========================
+    const quotes = [
+      "Não é milagre: é repetição.",
+      "Resultado é o nome bonito de rotina bem feita.",
+      "Atalho bom é o que você constrói trabalhando.",
+      "Trabalho hoje, paz amanhã.",
+      "Consistência vence motivação.",
+      "Se fosse fácil, todo mundo tinha.",
+      "Você não precisa de sorte: precisa de processo."
+    ];
+
+    const shopItems = [
+      { id:"pc1", title:"+1 por clique", desc:"Aumenta seu ganho por clique em 1.", base: 25, step: 20, max: 25, add:1 },
+      { id:"pc2", title:"+3 por clique", desc:"Aumenta seu ganho por clique em 3.", base: 180, step: 90, max: 15, add:3 },
+      { id:"pc3", title:"+10 por clique", desc:"Aumenta seu ganho por clique em 10.", base: 850, step: 280, max: 8, add:10 },
+      { id:"aura", title:"Aura do Foco", desc:"Bônus permanente de moedas (até 25%).", base: 300, step: 220, max: 10, add:0 }
+    ];
+
+    function priceFor(item){
+      const lvl = state.upgrades[item.id] || 0;
+      return Math.floor(item.base + lvl * item.step);
+    }
+
+    function auraBonus(){
+      // 0..25%
+      return clamp((state.upgrades.aura||0) * 2.5, 0, 25);
+    }
+
+    function xpNeed(level){
+      return Math.floor(40 + (level-1)*22 + Math.pow(level,1.35)*8);
+    }
+
+    function addXP(x){
+      state.xp += x;
+      while(state.xp >= xpNeed(state.level)){
+        state.xp -= xpNeed(state.level);
+        state.level += 1;
+        toast("Subiu de nível!", `Nível ${state.level}. A disciplina agradece.`);
+        beep(880,.07,"triangle",.045);
+        unlockBadge("lvl_"+state.level, `Nível ${state.level}`, `Alcançou o nível ${state.level}.`);
+      }
+    }
+
+    function comboDecay(){
+      // called by a timer: if too long without tap, reduce combo
+      const t = Date.now();
+      if(!state.lastTapAt) return;
+      const dt = t - state.lastTapAt;
+      if(dt > 2300 && state.combo > 1){
+        state.combo = Math.max(1, state.combo - 1);
+        renderTop();
+      }
+      if(dt > 5200 && state.combo !== 1){
+        state.combo = 1;
+        renderTop();
+      }
+    }
+
+    setInterval(comboDecay, 650);
+
+    function gainPerTap(){
+      const bonus = 1 + (auraBonus()/100);
+      const comboMul = 1 + (state.combo-1)*0.12; // x1, x1.12, x1.24...
+      return Math.max(1, Math.floor(state.perClick * bonus * comboMul));
+    }
+
+    function onTap(e, bonusMode=false){
+      const t = Date.now();
+      const dt = t - (state.lastTapAt || 0);
+      state.lastTapAt = t;
+
+      // Combo logic: if quick enough, grow
+      if(dt < 650) state.combo = clamp(state.combo + 1, 1, 25);
+      else if(dt < 1200) state.combo = clamp(state.combo, 1, 25);
+      else state.combo = 1;
+
+      state.bestCombo = Math.max(state.bestCombo, state.combo);
+
+      const g = gainPerTap() + (bonusMode ? Math.floor(state.perClick*0.35) : 0);
+      state.coins += g;
+      state.clicks += 1;
+
+      addXP(4 + Math.floor(state.combo/3));
+      checkMissions();
+      checkBadges();
+
+      floatText(`+${g}`, e);
+      beep(520 + state.combo*10, .045, "sine", .03);
+      renderAll();
+      save();
+    }
+
+    function payMiracle(){
+      // "milagre" costs coins or time
+      const fee = Math.max(4, Math.floor(6 + state.level*1.25));
+      state.coins = Math.max(0, state.coins - fee);
+      state.taxPaid += fee;
+      state.combo = 1;
+      addXP(1);
+      checkMissions();
+      checkBadges();
+      toast("Taxa de milagre aplicada", `Você pagou ${fee} moedas. Próxima vez: trabalho.`);
+      $("#miracleBtn").classList.add("shake");
+      setTimeout(()=>$("#miracleBtn").classList.remove("shake"), 380);
+      beep(180,.09,"sawtooth",.05);
+      renderAll();
+      save();
+    }
+
+    // =========================
+    // Missions & Badges
+    // =========================
+    const allMissions = [
+      { key:"m_click_50", title:"50 cliques", desc:"Clique 50 vezes no trabalhar.", type:"clicks", target:50, reward:40 },
+      { key:"m_click_200", title:"200 cliques", desc:"Clique 200 vezes no trabalhar.", type:"clicks", target:200, reward:160 },
+      { key:"m_combo_10", title:"Combo 10", desc:"Alcance combo x10.", type:"combo", target:10, reward:80 },
+      { key:"m_combo_20", title:"Combo 20", desc:"Alcance combo x20.", type:"combo", target:20, reward:220 },
+      { key:"m_lvl_5", title:"Nível 5", desc:"Chegue ao nível 5.", type:"level", target:5, reward:120 },
+      { key:"m_lvl_10", title:"Nível 10", desc:"Chegue ao nível 10.", type:"level", target:10, reward:380 },
+      { key:"m_avoid_miracle", title:"Sem milagre", desc:"Passe 60 cliques sem apertar “milagre”.", type:"streak", target:60, reward:200 }
+    ];
+
+    function makeMissions(){
+      // deterministic-ish by seed
+      const seed = state.missionsSeed || 1;
+      const pick = [];
+      const used = new Set();
+      let n = 0;
+      while(pick.length < 3 && n < 50){
+        const idx = Math.floor(Math.abs(Math.sin((seed+n)*999.1))*allMissions.length);
+        const m = allMissions[idx];
+        if(!used.has(m.key)){
+          used.add(m.key);
+          pick.push({ ...m, done:false, progress:0 });
+        }
+        n++;
+      }
+      state.missions = pick;
+      state.missionsSeed = seed + 1;
+      // reset streak tracking
+      state._noMiracleClicks = 0;
+      save();
+    }
+
+    function missionProgress(m){
+      if(m.type==="clicks") return clamp(state.clicks, 0, m.target);
+      if(m.type==="combo") return clamp(state.bestCombo, 0, m.target);
+      if(m.type==="level") return clamp(state.level, 0, m.target);
+      if(m.type==="streak"){
+        // internal streak: reset when miracle used
+        return clamp(state._noMiracleClicks || 0, 0, m.target);
+      }
+      return 0;
+    }
+
+    function checkMissions(){
+      // streak tracker
+      state._noMiracleClicks ||= 0;
+      state._noMiracleClicks += 1;
+
+      for(const m of state.missions){
+        if(m.done) continue;
+        m.progress = missionProgress(m);
+        if(m.progress >= m.target){
+          m.done = true;
+          state.coins += m.reward;
+          toast("Missão concluída", `${m.title} (+${m.reward} moedas)`);
+          beep(740,.08,"triangle",.05);
+          unlockBadge("mission_"+m.key, `Missão: ${m.title}`, `Concluiu a missão "${m.title}".`);
+        }
+      }
+    }
+
+    function unlockBadge(id, title, desc){
+      if(state.badges[id]) return false;
+      state.badges[id] = { title, desc, at: Date.now() };
+      return true;
+    }
+
+    function checkBadges(){
+      if(state.clicks >= 10) unlockBadge("c10","Primeiros passos","Fez 10 cliques no trabalhar.");
+      if(state.clicks >= 100) unlockBadge("c100","Ritmo","Fez 100 cliques.");
+      if(state.clicks >= 500) unlockBadge("c500","Disciplina","Fez 500 cliques.");
+      if(state.bestCombo >= 8) unlockBadge("combo8","Embalado","Alcançou combo x8.");
+      if(state.bestCombo >= 15) unlockBadge("combo15","Incontrolável","Alcançou combo x15.");
+      if(state.taxPaid >= 100) unlockBadge("tax100","Pagou caro","Gastou 100 moedas procurando atalho.");
+      if(auraBonus() >= 10) unlockBadge("aura10","Foco real","Aura do foco chegou em 10%.");
+      if(state.perClick >= 10) unlockBadge("pc10","Ferramenta afiada","Chegou a 10 moedas por clique.");
+      save();
+    }
+
+    // =========================
+    // Leaderboard (local)
+    // =========================
+    const LB_KEY = "adhan_lb_v1";
+    function loadLB(){
+      try{
+        return JSON.parse(localStorage.getItem(LB_KEY)||"[]");
+      }catch(e){ return []; }
+    }
+    function saveLB(lb){
+      localStorage.setItem(LB_KEY, JSON.stringify(lb));
+    }
+    function updateLB(){
+      const lb = loadLB();
+      const entry = {
+        name: state.name,
+        score: state.coins,
+        level: state.level,
+        clicks: state.clicks,
+        at: Date.now()
+      };
+      lb.push(entry);
+      lb.sort((a,b)=> b.score - a.score);
+      const trimmed = lb.slice(0, 8);
+      saveLB(trimmed);
+    }
+
+    // =========================
+    // UI Rendering
+    // =========================
+    function renderTop(){
+      $("#coins").textContent = state.coins.toLocaleString("pt-BR");
+      $("#perClick").textContent = state.perClick.toLocaleString("pt-BR");
+      $("#combo").textContent = "x" + state.combo;
+      $("#level").textContent = state.level;
+      const need = xpNeed(state.level);
+      $("#xpBar").style.width = (state.xp/need*100).toFixed(1) + "%";
+      $("#bonusTag").textContent = `Bônus: ${auraBonus().toFixed(1)}%`;
+      $("#clicks").textContent = state.clicks.toLocaleString("pt-BR");
+      $("#tax").innerHTML = `${state.taxPaid.toLocaleString("pt-BR")} <small>moedas</small>`;
+      $("#soundState").textContent = state.sound ? "ON" : "OFF";
+      $("#moodTag").textContent = state.combo >= 10 ? "Modo: Máquina de execução" : (state.combo >= 5 ? "Modo: Embalado" : "Modo: Produtivo (quase)");
+      $("#moodTag").className = "tag " + (state.combo>=10 ? "good" : (state.combo>=5 ? "warn" : ""));
+    }
+
+    function renderShop(){
+      const wrap = $("#shop");
+      wrap.innerHTML = "";
+      for(const it of shopItems){
+        const lvl = state.upgrades[it.id] || 0;
+        const price = priceFor(it);
+        const maxed = lvl >= it.max;
+        const tagClass = maxed ? "good" : (state.coins >= price ? "warn" : "");
+        const item = document.createElement("div");
+        item.className = "item";
+        item.innerHTML = `
+          <div>
+            <div class="t">${it.title} <span class="mut">• nível ${lvl}/${it.max}</span></div>
+            <div class="d">${it.desc}</div>
+            <div class="mut" style="margin-top:6px">Custo: <span class="mono">${price}</span> moedas</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end">
+            <span class="tag ${tagClass}">${maxed ? "MAX" : (state.coins >= price ? "COMPRAR" : "FALTAM")}</span>
+            <button class="btn slim ${maxed ? "" : "primary"}" ${maxed?"disabled":""} data-buy="${it.id}">
+              ${maxed ? "Completo" : "Comprar"}
+            </button>
+          </div>
+        `;
+        wrap.appendChild(item);
+      }
+
+      $$("[data-buy]").forEach(b=>{
+        b.addEventListener("click", ()=>{
+          const id = b.getAttribute("data-buy");
+          const it = shopItems.find(x=>x.id===id);
+          const lvl = state.upgrades[id] || 0;
+          if(lvl >= it.max) return;
+
+          const cost = priceFor(it);
+          if(state.coins < cost){
+            toast("Sem moedas suficientes", "Clique mais e mantenha o combo.");
+            beep(220,.08,"square",.03);
+            return;
+          }
+          state.coins -= cost;
+          state.upgrades[id] = lvl + 1;
+
+          // apply effect
+          if(id.startsWith("pc")){
+            state.perClick += it.add;
+          }
+          if(id==="aura"){
+            // just bonus
+          }
+
+          toast("Upgrade comprado", `${it.title} ativado.`);
+          beep(660,.06,"triangle",.04);
+          checkBadges();
+          renderAll();
+          save();
+        });
+      });
+    }
+
+    function renderMissions(){
+      if(!state.missions || !state.missions.length) makeMissions();
+      const wrap = $("#missions");
+      wrap.innerHTML = "";
+      for(const m of state.missions){
+        const prog = missionProgress(m);
+        const pct = clamp(prog / m.target * 100, 0, 100);
+        const done = m.done || prog >= m.target;
+        const tag = done ? `<span class="tag good">CONCLUÍDA</span>` : `<span class="tag warn">${prog}/${m.target}</span>`;
+        const el = document.createElement("div");
+        el.className = "item";
+        el.innerHTML = `
+          <div style="flex:1">
+            <div class="t">${m.title}</div>
+            <div class="d">${m.desc}</div>
+            <div style="margin-top:8px" class="meter"><i style="width:${pct}%;"></i></div>
+            <div class="mut" style="margin-top:6px">Recompensa: <span class="mono">+${m.reward}</span> moedas</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end">
+            ${tag}
+          </div>
+        `;
+        wrap.appendChild(el);
+      }
+    }
+
+    function renderBadgesPreview(){
+      const wrap = $("#badgesPreview");
+      const badges = Object.values(state.badges || {});
+      badges.sort((a,b)=> (b.at||0)-(a.at||0));
+      wrap.innerHTML = "";
+
+      const show = badges.slice(0, 3);
+      if(show.length===0){
+        wrap.innerHTML = `<div class="mut">Sem conquistas ainda. Comece clicando em “Trabalhar agora”.</div>`;
+        return;
+      }
+      for(const b of show){
+        const el = document.createElement("div");
+        el.className = "item";
+        el.innerHTML = `
+          <div>
+            <div class="t">${b.title}</div>
+            <div class="d">${b.desc}</div>
+          </div>
+          <span class="tag good">OK</span>
+        `;
+        wrap.appendChild(el);
+      }
+    }
+
+    function renderLeaderboard(){
+      updateLB();
+      const lb = loadLB();
+      const wrap = $("#leaderboard");
+      wrap.innerHTML = "";
+      if(lb.length===0){
+        wrap.innerHTML = `<div class="mut">Sem ranking ainda.</div>`;
+        return;
+      }
+      lb.forEach((p,i)=>{
+        const el = document.createElement("div");
+        el.className = "item";
+        el.innerHTML = `
+          <div>
+            <div class="t">#${i+1} — ${escapeHtml(p.name)}</div>
+            <div class="d">Moedas: <span class="mono">${(p.score||0).toLocaleString("pt-BR")}</span> • Nível ${p.level||1} • Cliques ${ (p.clicks||0).toLocaleString("pt-BR") }</div>
+          </div>
+          <span class="tag">${new Date(p.at||Date.now()).toLocaleDateString("pt-BR")}</span>
+        `;
+        wrap.appendChild(el);
+      });
+    }
+
+    function renderStatus(){
+      const bonus = auraBonus();
+      const g = gainPerTap();
+      $("#statusLine").innerHTML = `Foco: <span style="color:var(--acc); font-weight:900">Ativo</span> • Ganho atual: <span class="mono">+${g}</span>/clique • Aura: <span class="mono">${bonus.toFixed(1)}%</span>`;
+      $("#statusHint").textContent = state.combo >= 10
+        ? "Agora sim. Continua no ritmo e não abre aba de “milagre”."
+        : (state.combo >= 5 ? "Boa. Mantém o clique e sobe o combo." : "Comece devagar, mas comece.");
+    }
+
+    function renderAll(){
+      renderTop();
+      renderShop();
+      renderMissions();
+      renderBadgesPreview();
+      renderLeaderboard();
+      renderStatus();
+    }
+
+    // =========================
+    // Effects
+    // =========================
+    function floatText(text, e){
+      const area = $(".bigTap .inner");
+      const rect = area.getBoundingClientRect();
+      const x = (e?.clientX ?? (rect.left + rect.width/2)) - rect.left;
+      const y = (e?.clientY ?? (rect.top + rect.height/2)) - rect.top;
+
+      const el = document.createElement("div");
+      el.className = "float";
+      el.style.left = (x + rnd(-14, 14)) + "px";
+      el.style.top  = (y + rnd(-10, 10)) + "px";
+      el.textContent = text;
+      area.appendChild(el);
+
+      requestAnimationFrame(()=> el.style.opacity = 1);
+      setTimeout(()=> el.remove(), 900);
+    }
+
+    let toastTimer = null;
+    function toast(title, text){
+      const t = $("#toast");
+      $("#toastT").textContent = title;
+      $("#toastX").textContent = text;
+      t.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(()=> t.classList.remove("show"), 2300);
+    }
+
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"']/g, s=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[s]));
+    }
+
+    // =========================
+    // Modal
+    // =========================
+    function openModal(title, html){
+      $("#modalTitle").textContent = title;
+      $("#modalContent").innerHTML = html;
+      $("#modalWrap").classList.add("show");
+      $("#modalWrap").setAttribute("aria-hidden","false");
+      beep(420,.06,"sine",.03);
+    }
+    function closeModal(){
+      $("#modalWrap").classList.remove("show");
+      $("#modalWrap").setAttribute("aria-hidden","true");
+    }
+
+    // =========================
+    // Background particles
+    // =========================
+    const canvas = $("#bg");
+    const ctx = canvas.getContext("2d");
+    let W=0,H=0, DPR=1;
+    const parts = [];
+    function resize(){
+      DPR = Math.min(2, window.devicePixelRatio || 1);
+      W = canvas.width = Math.floor(innerWidth * DPR);
+      H = canvas.height = Math.floor(innerHeight * DPR);
+      canvas.style.width = innerWidth+"px";
+      canvas.style.height = innerHeight+"px";
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    function initParts(){
+      parts.length = 0;
+      const n = Math.floor(Math.sqrt(innerWidth*innerHeight)/10);
+      for(let i=0;i<n;i++){
+        parts.push({
+          x: Math.random()*W,
+          y: Math.random()*H,
+          r: rnd(0.7, 2.2)*DPR,
+          vx: rnd(-0.18, 0.18)*DPR,
+          vy: rnd(-0.10, 0.12)*DPR,
+          a: rnd(0.07, 0.22),
+          p: Math.random()*Math.PI*2
+        });
+      }
+    }
+    initParts();
+    window.addEventListener("resize", initParts);
+
+    let last = 0;
+    function loop(t){
+      const dt = (t-last)||16;
+      last = t;
+      ctx.clearRect(0,0,W,H);
+
+      // Soft glow
+      ctx.fillStyle = "rgba(0,0,0,.0)";
+      ctx.fillRect(0,0,W,H);
+
+      // particles
+      for(const p of parts){
+        p.p += dt*0.0006;
+        p.x += p.vx*dt;
+        p.y += p.vy*dt + Math.sin(p.p)*0.03*DPR;
+
+        if(p.x < -40) p.x = W+40;
+        if(p.x > W+40) p.x = -40;
+        if(p.y < -40) p.y = H+40;
+        if(p.y > H+40) p.y = -40;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(229,231,235,${p.a})`;
+        ctx.fill();
+      }
+
+      // lines between close particles
+      for(let i=0;i<parts.length;i++){
+        for(let j=i+1;j<parts.length;j++){
+          const a = parts[i], b = parts[j];
+          const dx=a.x-b.x, dy=a.y-b.y;
+          const d = Math.hypot(dx,dy);
+          if(d < 120*DPR){
+            const alpha = (1 - d/(120*DPR)) * 0.08;
+            ctx.strokeStyle = `rgba(96,165,250,${alpha})`;
+            ctx.lineWidth = 1*DPR;
+            ctx.beginPath();
+            ctx.moveTo(a.x,a.y);
+            ctx.lineTo(b.x,b.y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+
+    // =========================
+    // Controls & Events
+    // =========================
+    $("#tap").addEventListener("click", (e)=> onTap(e, false));
+
+    $("#workBtn").addEventListener("click", (e)=>{
+      $("#workBtn").classList.add("shake");
+      setTimeout(()=>$("#workBtn").classList.remove("shake"), 360);
+      onTap(e, true);
+      toast("Boa.", "Trabalho com bônus: é isso que o universo respeita.");
+    });
+
+    $("#miracleBtn").addEventListener("click", ()=>{
+      // streak reset
+      state._noMiracleClicks = 0;
+      payMiracle();
+    });
+
+    $("#quoteBtn").addEventListener("click", ()=>{
+      const q = quotes[Math.floor(Math.random()*quotes.length)];
+      $("#msg").textContent = `Adhan: ${q} (e vai trabalhar).`;
+      toast("Frase atualizada", q);
+      beep(520,.05,"sine",.025);
+      save();
+    });
+
+    $("#soundBtn").addEventListener("click", ()=>{
+      state.sound = !state.sound;
+      $("#soundState").textContent = state.sound ? "ON" : "OFF";
+      toast("Som", state.sound ? "Ligado." : "Desligado.");
+      if(state.sound) beep(660,.06,"triangle",.04);
+      save();
+    });
+
+    $("#helpBtn").addEventListener("click", ()=>{
+      openModal("Como funciona",
+        `<p>Esse site é um joguinho de produtividade disfarçado:</p>
+         <ul>
+           <li><b>TRABALHAR AGORA</b>: ganha moedas e XP. Clique rápido para manter o combo.</li>
+           <li><b>Trabalhar (bônus)</b>: dá ganho extra (sem exagero, é “o esforço a mais”).</li>
+           <li><b>Procurar milagre</b>: cobra taxa e derruba combo. É a metáfora.</li>
+           <li>Use moedas para comprar <b>Upgrades</b> e ganhar mais por clique.</li>
+           <li>Complete <b>Missões</b> e desbloqueie <b>Conquistas</b>.</li>
+         </ul>
+         <p class="mut">Atalhos: <span class="kbd">Espaço</span> = clicar, <span class="kbd">M</span> = milagre, <span class="kbd">S</span> = som.</p>`
+      );
+    });
+
+    $("#resetBtn").addEventListener("click", ()=>{
+      openModal("Resetar progresso",
+        `<p>Isso vai zerar moedas, nível, missões e conquistas deste navegador.</p>
+         <div class="row" style="margin-top:10px">
+           <button class="btn bad" id="doReset">Confirmar reset</button>
+           <button class="btn" id="cancelReset">Cancelar</button>
+         </div>`
+      );
+      setTimeout(()=>{
+        $("#doReset").addEventListener("click", ()=>{
+          state = structuredClone(defaultState);
+          save();
+          renderAll();
+          closeModal();
+          toast("Reset feito", "Agora é disciplina do zero.");
+        });
+        $("#cancelReset").addEventListener("click", closeModal);
+      }, 0);
+    });
+
+    $("#newMissionsBtn").addEventListener("click", ()=>{
+      makeMissions();
+      renderMissions();
+      toast("Missões atualizadas", "Três novas metas foram geradas.");
+      beep(600,.06,"triangle",.04);
+    });
+
+    $("#showBadgesBtn").addEventListener("click", ()=>{
+      const list = Object.values(state.badges||{});
+      list.sort((a,b)=> (b.at||0)-(a.at||0));
+      const html = list.length ? list.map(b=> `<li><b>${escapeHtml(b.title)}</b> — ${escapeHtml(b.desc)}</li>`).join("")
+        : `<li>Nenhuma ainda. Clique em “Trabalhar agora”.</li>`;
+      openModal("Conquistas",
+        `<p>As conquistas são liberadas conforme você joga.</p>
+         <ul>${html}</ul>`
+      );
+    });
+
+    $("#renameBtn").addEventListener("click", ()=>{
+      openModal("Renomear jogador",
+        `<p>Seu nome aparece no ranking local.</p>
+         <div class="row" style="margin-top:10px">
+           <input id="nameInput" class="btn" style="flex:1; text-align:left" value="${escapeHtml(state.name)}" />
+           <button class="btn primary" id="saveName">Salvar</button>
+         </div>`
+      );
+      setTimeout(()=>{
+        const inp = $("#nameInput");
+        $("#saveName").addEventListener("click", ()=>{
+          const v = (inp.value||"").trim().slice(0,18);
+          state.name = v || "Jogador";
+          save();
+          renderLeaderboard();
+          closeModal();
+          toast("Nome salvo", `Olá, ${state.name}.`);
+        });
+      }, 0);
+    });
+
+    $("#closeModal").addEventListener("click", closeModal);
+    $("#modalWrap").addEventListener("click", (e)=>{ if(e.target === $("#modalWrap")) closeModal(); });
+    window.addEventListener("keydown", (e)=>{
+      if(e.key === "Escape") closeModal();
+
+      if(e.key === " "){
+        e.preventDefault();
+        onTap({ clientX: innerWidth/2, clientY: innerHeight/2 }, false);
+      }
+      if(e.key.toLowerCase() === "m"){
+        state._noMiracleClicks = 0;
+        payMiracle();
+      }
+      if(e.key.toLowerCase() === "s"){
+        state.sound = !state.sound;
+        renderTop();
+        toast("Som", state.sound ? "Ligado." : "Desligado.");
+        if(state.sound) beep(660,.06,"triangle",.04);
+        save();
+      }
+    });
+
+    // Konami Code Easter egg
+    const konami = ["ArrowUp","ArrowUp","ArrowDown","ArrowDown","ArrowLeft","ArrowRight","ArrowLeft","ArrowRight","b","a"];
+    let kpos = 0;
+    window.addEventListener("keydown", (e)=>{
+      const key = e.key;
+      const expected = konami[kpos];
+      if(key === expected || key.toLowerCase() === expected){
+        kpos++;
+        if(kpos === konami.length){
+          kpos = 0;
+          state.coins += 250;
+          toast("Easter Egg", "Código secreto: +250 moedas. Agora vai trabalhar de verdade.");
+          beep(990,.09,"triangle",.06);
+          unlockBadge("konami","Hack permitido","Achou o Konami Code. Usou e assumiu.");
+          renderAll();
+          save();
+        }
+      }else{
+        kpos = 0;
+      }
+    });
+
+    // =========================
+    // Init
+    // =========================
+    if(!state.missions || state.missions.length===0) makeMissions();
+    $("#msg").textContent = "Adhan: parar de procurar milagre na internet e ir trabalhar. Um clique por vez.";
+    renderAll();
+
+    // Friendly first-time toast
+    if(state.clicks === 0){
+      setTimeout(()=> toast("Bem-vindo", "Clique em “TRABALHAR AGORA”. Milagre cobra taxa."), 650);
+    }
+  </script>
+</body>
+</html>
